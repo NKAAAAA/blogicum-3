@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}
+Лента записей
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-5">Лента записей</h1>
+    {% if user.is_authenticated %}
+        <a href="{% url 'blog:add_post' %}" class="btn btn-success mb-3">Добавить пост</a>
+    {% endif %}
+
+    {% for post in page_obj %}
+        <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px;">
+            <h2>
+                <a href="{% url 'blog:post_detail' post.id %}">{{ post.title }}</a>
+            </h2>
+            {% if post.image %}
+                <div>
+                    <img src="{{ post.image.url }}" alt="{{ post.title }}" style="max-width: 200px; max-height: 200px;">
+                </div>
+            {% endif %}
+            <p>{{ post.text|truncatechars:100 }}</p>
+            <p><strong>Автор:</strong> {{ post.author.username }}</p>
+            <p><strong>Дата публикации:</strong> {{ post.pub_date|date:"Y-m-d H:i" }}</p>
+            {% if user.is_authenticated and user == post.author %}
+                <a href="{% url 'blog:edit_post' post.id %}" class="btn btn-primary btn-sm">Редактировать</a>
+                <a href="{% url 'blog:delete_post' post.id %}" class="btn btn-danger btn-sm">Удалить</a>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>Посты отсутствуют.</p>
+    {% endfor %}
+
+    <!-- Пагинация -->
+    <div>
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; Первая</a>
+                <a href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+            {% endif %}
+
+            <span class="current">
+                Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">Следующая</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">Последняя &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+{% endblock %}
